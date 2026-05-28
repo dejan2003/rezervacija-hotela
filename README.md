@@ -37,12 +37,12 @@ Frontend:
 Backend: 
 
 ```bash
+
 npm run dev
 npm run build
 
 Frontend:
 
-```bash
 cd pivt_frontend
 npm install
 npm start
