@@ -43,6 +43,5 @@ npm run build
 
 Frontend:
 
-cd pivt_frontend
 npm install
 npm start
