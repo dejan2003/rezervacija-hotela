@@ -1,0 +1,39 @@
+<section class="page-shell profile-page">
+    <mat-card class="profile-card">
+        <mat-card-header>
+            <mat-card-title>Moji podaci</mat-card-title>
+            <mat-card-subtitle>Izmeni osnovne podatke naloga</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+            <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+                <div class="two-col">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Ime</mat-label>
+                        <input matInput formControlName="firstName" />
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Prezime</mat-label>
+                        <input matInput formControlName="lastName" />
+                    </mat-form-field>
+                </div>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Email</mat-label>
+                    <input matInput type="email" formControlName="email" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Telefon</mat-label>
+                    <input matInput formControlName="phone" />
+                </mat-form-field>
+
+                <button mat-flat-button type="submit">
+                    <mat-icon>save</mat-icon>
+                    Sačuvaj izmene
+                </button>
+            </form>
+        </mat-card-content>
+    </mat-card>
+</section>

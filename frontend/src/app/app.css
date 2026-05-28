@@ -1,0 +1,78 @@
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 72px;
+  padding: 0 clamp(16px, 4vw, 56px);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  color: #15213a;
+  backdrop-filter: blur(18px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 28px;
+  color: inherit;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 8px;
+  background: #13213c;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+nav {
+  display: flex;
+  gap: 4px;
+}
+
+.active-link {
+  background: rgba(19, 33, 60, 0.08);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.user-pill {
+  max-width: 260px;
+  margin-right: 12px;
+  overflow: hidden;
+  color: #506078;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+main {
+  min-height: calc(100vh - 72px);
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    height: auto;
+    min-height: 72px;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-block: 12px;
+  }
+
+  nav {
+    order: 3;
+    width: 100%;
+  }
+
+  .user-pill {
+    display: none;
+  }
+}

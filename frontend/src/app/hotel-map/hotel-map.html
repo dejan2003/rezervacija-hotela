@@ -1,0 +1,27 @@
+<section class="hotel-map-section">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Lokacija</p>
+      <h2>Šta se nalazi u blizini hotela</h2>
+    </div>
+  </div>
+
+  <div class="map-layout">
+    <div #mapContainer class="hotel-map" aria-label="Mapa lokacije hotela"></div>
+
+    <div class="nearby-panel">
+      <h3>U blizini</h3>
+
+      @for (place of places; track place.name) {
+        <button type="button" class="nearby-item" (click)="focusPlace(place)">
+          <span>
+            <strong>{{ place.name }}</strong>
+            <small>{{ place.type }}</small>
+          </span>
+
+          <em>{{ place.distance }}</em>
+        </button>
+      }
+    </div>
+  </div>
+</section>

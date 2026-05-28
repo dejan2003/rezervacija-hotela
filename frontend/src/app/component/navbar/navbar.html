@@ -1,0 +1,57 @@
+<header class="site-header">
+  <div class="page-shell nav-shell">
+    <a class="brand" routerLink="/">
+      <span>
+        <strong>Hotel Beograd</strong>
+        <small>Rezervacije soba</small>
+      </span>
+
+      <span class="brand-icon">
+        <mat-icon>hotel</mat-icon>
+      </span>
+    </a>
+    <nav class="nav-links" aria-label="Glavna navigacija">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Početna
+      </a>
+
+      <a routerLink="/info" routerLinkActive="active">
+        O nama
+      </a>
+
+      @if (auth.currentUser()) {
+      <a routerLink="/dashboard" routerLinkActive="active">
+        Rezervacije
+      </a>
+      }
+    </nav>
+
+    <div class="nav-actions">
+      @if (auth.currentUser(); as user) {
+      <button class="user-chip user-chip-button" type="button" routerLink="/profile">
+        <mat-icon>person</mat-icon>
+        {{ user.firstName }}
+      </button>
+
+      <button mat-stroked-button type="button" (click)="auth.logout()">
+        <mat-icon>logout</mat-icon>
+        Odjava
+      </button>
+      } @else {
+      <button mat-flat-button routerLink="/login">
+        <mat-icon>login</mat-icon>
+        Prijava
+      </button>
+      }
+      <label class="theme-switch" title="Promeni temu">
+        <input type="checkbox" [checked]="theme.isDark()" (change)="theme.toggleTheme()" aria-label="Promeni temu" />
+
+        <span class="switch-track">
+          <mat-icon>light_mode</mat-icon>
+          <mat-icon>dark_mode</mat-icon>
+          <span class="switch-ball"></span>
+        </span>
+      </label>
+    </div>
+  </div>
+</header>

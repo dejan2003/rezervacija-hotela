@@ -1,0 +1,30 @@
+.profile-page {
+  padding: 40px 0;
+}
+
+.profile-card {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.profile-card form {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+button {
+  justify-self: start;
+}
+
+@media (max-width: 720px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+}

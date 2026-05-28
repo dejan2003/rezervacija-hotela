@@ -1,0 +1,203 @@
+<section class="page-shell dashboard-page">
+  <header class="dashboard-header">
+    <div>
+      <p class="eyebrow">Moje rezervacije</p>
+      <h1>
+        @if (auth.currentUser(); as user) {
+          Dobrodošli, {{ user.firstName }}
+        }
+      </h1>
+    </div>
+
+    <button mat-stroked-button type="button" (click)="loadDashboard()">
+      <mat-icon>refresh</mat-icon>
+      Osveži
+    </button>
+  </header>
+
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (auth.isAdmin() && stats(); as adminStats) {
+    <div class="stats-grid">
+      <mat-card>
+        <mat-icon>meeting_room</mat-icon>
+        <span>Ukupan broj soba</span>
+        <strong>{{ adminStats.totalRooms }}</strong>
+      </mat-card>
+
+      <mat-card>
+        <mat-icon>task_alt</mat-icon>
+        <span>Dostupno</span>
+        <strong>{{ adminStats.availableRooms }}</strong>
+      </mat-card>
+
+      <mat-card>
+        <mat-icon>event_note</mat-icon>
+        <span>Aktivne rezervacije</span>
+        <strong>{{ adminStats.activeReservations }}</strong>
+      </mat-card>
+
+      <mat-card>
+        <mat-icon>payments</mat-icon>
+        <span>Prihod</span>
+        <strong>{{ adminStats.revenue | currency: 'RSD' }}</strong>
+      </mat-card>
+    </div>
+  }
+
+  <div class="content-grid" [class.staff-grid]="auth.isAdmin()">
+    @if (auth.isAdmin()) {
+      <mat-card class="panel">
+        <mat-card-header>
+          <mat-card-title>Dodaj sobu</mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <form [formGroup]="roomForm" (ngSubmit)="createRoom()">
+            <mat-form-field appearance="outline">
+              <mat-label>Broj sobe</mat-label>
+              <input matInput formControlName="roomNumber" />
+            </mat-form-field>
+
+            <div class="two-col">
+              <mat-form-field appearance="outline">
+                <mat-label>Sprat</mat-label>
+                <input matInput type="number" formControlName="floor" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Kvadratura</mat-label>
+                <input matInput type="number" formControlName="sizeSqm" />
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Tip sobe</mat-label>
+              <mat-select formControlName="roomTypeId">
+                @for (type of roomTypes(); track type.roomTypeId) {
+                  <mat-option [value]="type.roomTypeId">
+                    {{ type.name }} · {{ price(type.basePrice) | currency: 'RSD' }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>URL slike</mat-label>
+              <input matInput formControlName="imageUrl" />
+            </mat-form-field>
+
+            <button mat-flat-button type="submit">
+              <mat-icon>add</mat-icon>
+              Dodaj sobu
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <mat-card class="panel reservations-panel">
+      <mat-card-header>
+        <mat-card-title>{{ auth.isAdmin() ? 'Rezervacije' : 'Moje rezervacije' }}</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="table-wrap">
+          <table mat-table [dataSource]="reservations()">
+            <ng-container matColumnDef="code">
+              <th mat-header-cell *matHeaderCellDef>Kod</th>
+              <td mat-cell *matCellDef="let reservation">
+                {{ reservation.reservationCode }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="guest">
+              <th mat-header-cell *matHeaderCellDef>Gost</th>
+              <td mat-cell *matCellDef="let reservation">
+                {{ reservation.user.firstName }} {{ reservation.user.lastName }}
+                <br />
+                <small>{{ reservation.guest }} osoba</small>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="room">
+              <th mat-header-cell *matHeaderCellDef>Soba</th>
+              <td mat-cell *matCellDef="let reservation">
+                {{ reservation.room.roomNumber }} · {{ reservation.room.roomType.name }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="dates">
+              <th mat-header-cell *matHeaderCellDef>Datum</th>
+              <td mat-cell *matCellDef="let reservation">
+                {{ reservation.checkInDate | date: 'MMM d' }} -
+                {{ reservation.checkOutDate | date: 'MMM d, y' }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="total">
+              <th mat-header-cell *matHeaderCellDef>Ukupna cena</th>
+              <td mat-cell *matCellDef="let reservation">
+                {{ price(reservation.totalPrice) | currency: 'RSD' }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let reservation">
+                @if (auth.isAdmin()) {
+                  <mat-form-field appearance="outline" class="status-select">
+                    <mat-select
+                      [value]="reservation.status"
+                      (selectionChange)="updateStatus(reservation, $event)"
+                    >
+                      @for (status of statuses; track status) {
+                        <mat-option [value]="status">{{ status }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                } @else {
+                  <span
+                    class="status-badge"
+                    [class.warning]="reservation.status === 'PENDING'"
+                    [class.danger]="reservation.status === 'CANCELLED'"
+                  >
+                    {{ reservation.status }}
+                  </span>
+                }
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let reservation">
+                @if (reservation.status !== 'CANCELLED' && reservation.status !== 'CHECKED_OUT') {
+                  <button
+                    mat-icon-button
+                    type="button"
+                    aria-label="Cancel reservation"
+                    (click)="cancelReservation(reservation)"
+                  >
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                }
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="auth.isAdmin() ? reservationColumns : guestReservationColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: auth.isAdmin() ? reservationColumns : guestReservationColumns"></tr>
+          </table>
+        </div>
+
+        @if (!reservations().length) {
+          <div class="empty-state">
+            <mat-icon>event_busy</mat-icon>
+            <h3>Nema rezervacija</h3>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+</section>

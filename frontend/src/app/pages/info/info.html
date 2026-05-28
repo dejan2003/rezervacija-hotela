@@ -1,0 +1,72 @@
+<section class="info-hero">
+  <div class="info-hero-overlay">
+    <div class="page-shell hero-content">
+      <p class="eyebrow">O hotelu</p>
+      <h1>Hotel Beograd</h1>
+      <p>
+        Moderan hotel namenjen gostima koji žele jednostavnu rezervaciju,
+        udoban boravak i pouzdanu uslugu na jednom mestu.
+      </p>
+
+      <div class="hero-actions">
+        <button mat-flat-button routerLink="/">
+          <mat-icon>search</mat-icon>
+          Pogledaj sobe
+        </button>
+
+        <button mat-stroked-button routerLink="/login">
+          <mat-icon>person</mat-icon>
+          Prijava
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="page-shell info-section">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Prednosti</p>
+      <h2>Šta nudimo gostima</h2>
+    </div>
+  </div>
+
+  <div class="highlight-grid">
+    @for (item of highlights; track item.title) {
+      <mat-card class="highlight-card">
+        <mat-icon>{{ item.icon }}</mat-icon>
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.text }}</p>
+      </mat-card>
+    }
+  </div>
+</section>
+
+<section class="page-shell">
+  <app-hotel-map></app-hotel-map>
+</section>
+
+<section class="contact-band">
+  <div class="page-shell contact-grid">
+    <div>
+      <p class="eyebrow">Kontakt</p><br>
+      <h2>Tu smo za sva pitanja</h2><br>
+      <p>
+        Za dodatne informacije o sobama, rezervacijama ili posebnim uslovima
+        boravka možete nas kontaktirati direktno.
+      </p>
+    </div>
+
+    <div class="contact-list">
+      @for (item of contactItems; track item.label) {
+        <div class="contact-item">
+          <mat-icon>{{ item.icon }}</mat-icon>
+          <div>
+            <span>{{ item.label }}</span>
+            <strong>{{ item.value }}</strong>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>

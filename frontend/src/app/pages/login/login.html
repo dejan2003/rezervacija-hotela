@@ -1,0 +1,72 @@
+<section class="auth-page">
+  <div class="auth-visual">
+    <p class="eyebrow">Uživanje kreće</p>
+    <h1>Kada uočite ovaj prizor vaša avantura može da počne</h1>
+  </div>
+
+  <mat-card class="auth-card">
+    <mat-button-toggle-group [value]="mode()" (change)="mode.set($event.value)" aria-label="Auth mode">
+      <mat-button-toggle value="login">
+        <mat-icon>login</mat-icon>
+        Prijava
+      </mat-button-toggle>
+      <mat-button-toggle value="register">
+        <mat-icon>person_add</mat-icon>
+        Registracija
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+
+    @if (mode() === 'login') {
+      <form [formGroup]="loginForm" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Lozinka</mat-label>
+          <input matInput type="password" formControlName="password" />
+        </mat-form-field>
+
+        <button mat-flat-button type="submit" [disabled]="loading()">
+          <mat-icon>arrow_forward</mat-icon>
+          Prijavi se
+        </button>
+      </form>
+    } @else {
+      <form [formGroup]="registerForm" (ngSubmit)="submit()">
+        <div class="two-col">
+          <mat-form-field appearance="outline">
+            <mat-label>Ime</mat-label>
+            <input matInput formControlName="firstName" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Prezime</mat-label>
+            <input matInput formControlName="lastName" />
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Broj telefona</mat-label>
+          <input matInput formControlName="phone" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Lozinka</mat-label>
+          <input matInput type="password" formControlName="password" />
+        </mat-form-field>
+
+        <button mat-flat-button type="submit" [disabled]="loading()">
+          <mat-icon>person_add</mat-icon>
+          Registruj se
+        </button>
+      </form>
+    }
+  </mat-card>
+</section>

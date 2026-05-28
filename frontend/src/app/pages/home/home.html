@@ -1,0 +1,134 @@
+<section class="hero">
+  <div class="hero-overlay">
+    <div class="page-shell hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Odmor počinje</p>
+        <h1>DOBRODOŠLI U NAŠ HOTEL</h1>
+        <p>
+          Zakoračite u prostor kreiran za potpuni odmor
+          i dopustite nam da Vaš boravak pretvorimo u umetnost gostoprimstva.
+        </p>
+      </div>
+
+      <form class="search-panel" [formGroup]="searchForm" (ngSubmit)="loadRooms()">
+        <mat-form-field appearance="outline">
+          <mat-label>Datum prijavljivanja</mat-label>
+          <input matInput readonly [matDatepicker]="checkInPicker" [min]="tomorrow" formControlName="checkIn"
+            (click)="checkInPicker.open()" />
+          <mat-datepicker-toggle matIconSuffix [for]="checkInPicker"></mat-datepicker-toggle>
+          <mat-datepicker #checkInPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Datum odjavljivanja</mat-label>
+          <input matInput readonly [matDatepicker]="checkOutPicker" [min]="searchForm.controls.checkIn.value"
+            formControlName="checkOut" (click)="checkOutPicker.open()" />
+          <mat-datepicker-toggle matIconSuffix [for]="checkOutPicker"></mat-datepicker-toggle>
+          <mat-datepicker #checkOutPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Broj osoba</mat-label>
+          <input matInput type="number" min="1" formControlName="guests" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Tip sobe</mat-label>
+          <mat-select formControlName="roomTypeId">
+            <mat-option value="">Svi tipovi</mat-option>
+
+            @for (type of roomTypes(); track type.roomTypeId) {
+            <mat-option [value]="type.roomTypeId">
+              {{ type.name }}
+            </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Pogodnosti</mat-label>
+          <mat-select formControlName="amenities" multiple>
+            @for (amenity of amenityOptions; track amenity) {
+            <mat-option [value]="amenity">
+              {{ amenity }}
+            </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-flat-button type="submit">
+          <mat-icon>search</mat-icon>
+          Pretraži
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="page-shell rooms-section">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Dostupne sobe</p>
+      <h2>Sobe spremne za rezervaciju</h2>
+    </div>
+    <span>{{ rooms().length }} soba</span>
+  </div>
+
+  @if (loading()) {
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+
+  <div class="room-grid">
+    @for (room of rooms(); track room.roomId) {
+    <mat-card class="room-card">
+
+      <img mat-card-image
+        [src]="room.imageUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80'"
+        [alt]="room.roomType.name" />
+
+      <mat-card-content>
+        <div class="room-card-header">
+          <div>
+            <p>Soba {{ room.roomNumber }} · Sprat {{ room.floor }}</p>
+            <h3>{{ room.roomType.name }}</h3>
+          </div>
+          <span>{{ room.status }}</span>
+        </div>
+
+        <p>{{ room.roomType.description }}</p>
+
+        <div>
+          @for (a of amenities(room); track a) {
+          <mat-chip>{{ a }}</mat-chip>
+          }
+        </div>
+
+        <div>
+          <span>Broj osoba: {{ room.roomType.capacity }} </span><br>
+          <span>Broj kreveta: {{ room.roomType.bedCount }} </span><br>
+          @if (room.sizeSqm) {
+          <span>Kvadratura: {{ room.sizeSqm }} m²</span>
+          }
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <strong>Već od {{ price(room) | currency:'RSD' }} </strong>
+
+        <button mat-flat-button (click)="reserve(room)">
+          <mat-icon>event_available</mat-icon>
+          Rezerviši
+        </button>
+      </mat-card-actions>
+
+    </mat-card>
+    }
+
+    @empty {
+    <div>
+      <mat-icon>search_off</mat-icon>
+      <h3>Nema soba</h3>
+    </div>
+    }
+  </div>
+</section>
