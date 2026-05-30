@@ -138,3 +138,26 @@ th {
     grid-template-columns: 1fr;
   }
 }
+
+.review-panel {
+  margin-bottom: 22px;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 56px;
+}
+
+.rating-star {
+  color: #9aa4b2;
+}
+
+.rating-star.active {
+  color: #d28d3d;
+}
+
+.rating-row strong {
+  margin-left: 8px;
+}

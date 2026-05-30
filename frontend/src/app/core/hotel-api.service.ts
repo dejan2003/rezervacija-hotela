@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 
-import { DashboardStats, Reservation, ReservationStatus, Room, RoomType } from './models';
+import { DashboardStats, Reservation, ReservationStatus, Room, RoomType, Review } from './models';
 
 const API_URL = 'http://localhost:4000/api';
 
@@ -52,22 +52,24 @@ export class HotelApiService {
   }
 
   updateReservationStatus(id: number, status: ReservationStatus) {
-    return this.http.patch<Reservation>(
-      `${API_URL}/reservations/${id}/status`,
-      {
-        status,
-      },
-    );
+    return this.http.patch<Reservation>(`${API_URL}/reservations/${id}/status`, {
+      status,
+    });
   }
 
   cancelReservation(id: number) {
-    return this.http.patch<Reservation>(
-      `${API_URL}/reservations/${id}/cancel`,
-      {},
-    );
+    return this.http.patch<Reservation>(`${API_URL}/reservations/${id}/cancel`, {});
   }
 
   getDashboardStats() {
     return this.http.get<{ stats: DashboardStats }>(`${API_URL}/dashboard/admin`);
+  }
+
+  getReviews() {
+    return this.http.get<Review[]>(`${API_URL}/reviews`);
+  }
+
+  createReview(payload: { roomId: number; rating: number; comment?: string }) {
+    return this.http.post<Review>(`${API_URL}/reviews`, payload);
   }
 }

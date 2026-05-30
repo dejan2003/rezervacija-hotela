@@ -13,7 +13,7 @@ ReviewRoute.get("/:id", (req, res) => {
   handleRequest(res, ReviewService.getReviewById(Number(req.params.id)));
 });
 
-ReviewRoute.post("/", requireAuth, (req, res) => {
+ReviewRoute.post("/", requireAuth, requireRole("GUEST"), (req, res) => {
   const user = res.locals.user as { userId: number };
 
   handleRequest(

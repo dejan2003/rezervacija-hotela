@@ -16,7 +16,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { AuthService } from '../../core/auth.service';
 import { HotelApiService } from '../../core/hotel-api.service';
-import { Room, RoomType } from '../../core/models';
+import { Room, RoomType, Review } from '../../core/models';
 
 const toDateInput = (date: Date) => date.toISOString().slice(0, 10);
 
@@ -52,6 +52,9 @@ export class Home implements OnInit {
   readonly roomTypes = signal<RoomType[]>([]);
   readonly loading = signal(false);
 
+  readonly reviews = signal<Review[]>([]);
+  readonly ratingStars = [1, 2, 3, 4, 5];
+
   readonly tomorrow = (() => {
     const d = new Date();
     d.setDate(d.getDate() + 1);
@@ -72,14 +75,7 @@ export class Home implements OnInit {
     amenities: this.fb.nonNullable.control<string[]>([]),
   });
 
-  readonly amenityOptions = [
-    'WiFi',
-    'TV',
-    'Klima',
-    'Mini bar',
-    'Balkon',
-    'Jacuzzi',
-  ];
+  readonly amenityOptions = ['WiFi', 'TV', 'Klima', 'Mini bar', 'Balkon', 'Jacuzzi'];
 
   ngOnInit(): void {
     this.loadRooms();
@@ -87,6 +83,11 @@ export class Home implements OnInit {
     this.api.getRoomTypes().subscribe({
       next: (roomTypes) => this.roomTypes.set(roomTypes),
       error: () => this.roomTypes.set([]),
+    });
+
+    this.api.getReviews().subscribe({
+      next: (reviews) => this.reviews.set(reviews),
+      error: () => this.reviews.set([]),
     });
   }
 
@@ -101,7 +102,7 @@ export class Home implements OnInit {
         checkOut: toDateInput(checkOut),
         guests,
         roomTypeId,
-        amenities: amenities.join(',')
+        amenities: amenities.join(','),
       })
       .subscribe({
         next: (rooms) => {
@@ -161,5 +162,21 @@ export class Home implements OnInit {
 
   price(room: Room): number {
     return Number(room.roomType?.basePrice);
+  }
+
+  averageRating(room: Room): number | null {
+    const roomReviews = this.reviews().filter((review) => review.room.roomId === room.roomId);
+
+    if (!roomReviews.length) {
+      return null;
+    }
+
+    const total = roomReviews.reduce((sum, review) => sum + Number(review.rating), 0);
+
+    return Math.round((total / roomReviews.length) * 10) / 10;
+  }
+
+  reviewCount(room: Room): number {
+    return this.reviews().filter((review) => review.room.roomId === room.roomId).length;
   }
 }

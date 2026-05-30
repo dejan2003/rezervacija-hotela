@@ -13,13 +13,7 @@ import { MatTableModule } from '@angular/material/table';
 
 import { AuthService } from '../../core/auth.service';
 import { HotelApiService } from '../../core/hotel-api.service';
-import {
-  DashboardStats,
-  Reservation,
-  ReservationStatus,
-  Room,
-  RoomType
-} from '../../core/models';
+import { DashboardStats, Reservation, ReservationStatus, Room, RoomType } from '../../core/models';
 
 @Component({
   selector: 'app-dashboard',
@@ -42,7 +36,6 @@ import {
   styleUrl: './dashboard.css',
 })
 export class Dashboard implements OnInit {
-
   protected readonly auth = inject(AuthService);
   private readonly api = inject(HotelApiService);
   private readonly fb = inject(FormBuilder);
@@ -62,7 +55,7 @@ export class Dashboard implements OnInit {
     'CONFIRMED',
     'CANCELLED',
     'CHECKED_IN',
-    'CHECKED_OUT'
+    'CHECKED_OUT',
   ];
 
   readonly roomForm = this.fb.nonNullable.group({
@@ -71,6 +64,14 @@ export class Dashboard implements OnInit {
     sizeSqm: [28],
     roomTypeId: [0, Validators.required],
     imageUrl: [''],
+  });
+
+  readonly reviewSubmitting = signal(false);
+  readonly ratingOptions = [1, 2, 3, 4, 5];
+
+  readonly reviewForm = this.fb.nonNullable.group({
+    reservationId: [0, [Validators.required, Validators.min(1)]],
+    rating: [5, [Validators.required, Validators.min(1), Validators.max(5)]],
   });
 
   ngOnInit(): void {
@@ -126,16 +127,14 @@ export class Dashboard implements OnInit {
           floor: 1,
           sizeSqm: 28,
           roomTypeId: 0,
-          imageUrl: ''
+          imageUrl: '',
         });
         this.loadDashboard();
       },
       error: (error) => {
-        this.snackBar.open(
-          error.error?.message || 'Room could not be created.',
-          'Close',
-          { duration: 3000 }
-        );
+        this.snackBar.open(error.error?.message || 'Room could not be created.', 'Close', {
+          duration: 3000,
+        });
       },
     });
   }
@@ -147,11 +146,9 @@ export class Dashboard implements OnInit {
         this.loadDashboard();
       },
       error: (error) => {
-        this.snackBar.open(
-          error.error?.message || 'Status could not be updated.',
-          'Close',
-          { duration: 3000 }
-        );
+        this.snackBar.open(error.error?.message || 'Status could not be updated.', 'Close', {
+          duration: 3000,
+        });
       },
     });
   }
@@ -163,11 +160,9 @@ export class Dashboard implements OnInit {
         this.loadDashboard();
       },
       error: (error) => {
-        this.snackBar.open(
-          error.error?.message || 'Reservation could not be cancelled.',
-          'Close',
-          { duration: 3000 }
-        );
+        this.snackBar.open(error.error?.message || 'Reservation could not be cancelled.', 'Close', {
+          duration: 3000,
+        });
       },
     });
   }
@@ -180,5 +175,52 @@ export class Dashboard implements OnInit {
 
   price(value: string | number): number {
     return Number(value);
+  }
+
+  submitReview(): void {
+    if (this.reviewForm.invalid) {
+      this.reviewForm.markAllAsTouched();
+      return;
+    }
+
+    const { reservationId, rating } = this.reviewForm.getRawValue();
+
+    const reservation = this.reservations().find(
+      (item) => item.reservationId === Number(reservationId),
+    );
+
+    if (!reservation) {
+      this.snackBar.open('Izaberite rezervaciju.', 'Close', { duration: 3000 });
+      return;
+    }
+
+    this.reviewSubmitting.set(true);
+
+    this.api
+      .createReview({
+        roomId: reservation.room.roomId,
+        rating,
+      })
+      .subscribe({
+        next: () => {
+          this.reviewSubmitting.set(false);
+          this.reviewForm.patchValue({ rating: 5 });
+          this.snackBar.open('Recenzija je sačuvana.', 'Close', { duration: 3000 });
+        },
+        error: (error) => {
+          this.reviewSubmitting.set(false);
+          this.snackBar.open(error.error?.message || 'Recenzija nije sačuvana.', 'Close', {
+            duration: 3000,
+          });
+        },
+      });
+  }
+
+  setRating(rating: number): void {
+    this.reviewForm.controls.rating.setValue(rating);
+  }
+
+  reviewableReservations(): Reservation[] {
+    return this.reservations().filter((reservation) => reservation.status !== 'CANCELLED');
   }
 }

@@ -1,6 +1,11 @@
 export type UserRole = 'ADMIN' | 'RECEPTIONIST' | 'GUEST';
 export type RoomStatus = 'AVAILABLE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
-export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'CHECKED_IN' | 'CHECKED_OUT';
+export type ReservationStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'CANCELLED'
+  | 'CHECKED_IN'
+  | 'CHECKED_OUT';
 
 export interface User {
   userId: number;
@@ -29,6 +34,19 @@ export interface Room {
   status: RoomStatus;
   imageUrl?: string | null;
   roomType: RoomType;
+}
+
+export interface Review {
+  reviewId: number;
+  rating: number;
+  comment?: string | null;
+  createdAt: string;
+  user: Pick<User, 'userId' | 'firstName' | 'lastName'>;
+  room: {
+    roomId: number;
+    roomNumber: string;
+    roomType: RoomType;
+  };
 }
 
 export interface Reservation {

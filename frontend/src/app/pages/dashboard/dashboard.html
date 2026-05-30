@@ -4,7 +4,7 @@
       <p class="eyebrow">Moje rezervacije</p>
       <h1>
         @if (auth.currentUser(); as user) {
-          Dobrodošli, {{ user.firstName }}
+        Dobrodošli, {{ user.firstName }}
         }
       </h1>
     </div>
@@ -16,86 +16,124 @@
   </header>
 
   @if (loading()) {
-    <mat-progress-bar mode="indeterminate" />
+  <mat-progress-bar mode="indeterminate" />
   }
 
   @if (auth.isAdmin() && stats(); as adminStats) {
-    <div class="stats-grid">
-      <mat-card>
-        <mat-icon>meeting_room</mat-icon>
-        <span>Ukupan broj soba</span>
-        <strong>{{ adminStats.totalRooms }}</strong>
-      </mat-card>
+  <div class="stats-grid">
+    <mat-card>
+      <mat-icon>meeting_room</mat-icon>
+      <span>Ukupan broj soba</span>
+      <strong>{{ adminStats.totalRooms }}</strong>
+    </mat-card>
 
-      <mat-card>
-        <mat-icon>task_alt</mat-icon>
-        <span>Dostupno</span>
-        <strong>{{ adminStats.availableRooms }}</strong>
-      </mat-card>
+    <mat-card>
+      <mat-icon>task_alt</mat-icon>
+      <span>Dostupno</span>
+      <strong>{{ adminStats.availableRooms }}</strong>
+    </mat-card>
 
-      <mat-card>
-        <mat-icon>event_note</mat-icon>
-        <span>Aktivne rezervacije</span>
-        <strong>{{ adminStats.activeReservations }}</strong>
-      </mat-card>
+    <mat-card>
+      <mat-icon>event_note</mat-icon>
+      <span>Aktivne rezervacije</span>
+      <strong>{{ adminStats.activeReservations }}</strong>
+    </mat-card>
 
-      <mat-card>
-        <mat-icon>payments</mat-icon>
-        <span>Prihod</span>
-        <strong>{{ adminStats.revenue | currency: 'RSD' }}</strong>
-      </mat-card>
-    </div>
+    <mat-card>
+      <mat-icon>payments</mat-icon>
+      <span>Prihod</span>
+      <strong>{{ adminStats.revenue | currency: 'RSD' }}</strong>
+    </mat-card>
+  </div>
+  }
+  @if (!auth.isAdmin() && reviewableReservations().length) {
+  <mat-card class="panel review-panel">
+    <mat-card-header>
+      <mat-card-title>Ostavi recenziju</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
+        <mat-form-field appearance="outline">
+          <mat-label>Rezervacija</mat-label>
+          <mat-select formControlName="reservationId">
+            @for (reservation of reviewableReservations(); track reservation.reservationId) {
+            <mat-option [value]="reservation.reservationId">
+              Soba {{ reservation.room.roomNumber }} - {{ reservation.room.roomType.name }}
+            </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <div class="rating-row">
+          @for (rating of ratingOptions; track rating) {
+          <button mat-icon-button type="button" class="rating-star"
+            [class.active]="reviewForm.controls.rating.value >= rating" (click)="setRating(rating)">
+            <mat-icon>{{ reviewForm.controls.rating.value >= rating ? 'star' : 'star_border' }}</mat-icon>
+          </button>
+          }
+
+          <strong>{{ reviewForm.controls.rating.value }}/5</strong>
+        </div>
+
+        <button mat-flat-button type="submit" [disabled]="reviewSubmitting()">
+          <mat-icon>rate_review</mat-icon>
+          Pošalji recenziju
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
   }
 
   <div class="content-grid" [class.staff-grid]="auth.isAdmin()">
     @if (auth.isAdmin()) {
-      <mat-card class="panel">
-        <mat-card-header>
-          <mat-card-title>Dodaj sobu</mat-card-title>
-        </mat-card-header>
+    <mat-card class="panel">
+      <mat-card-header>
+        <mat-card-title>Dodaj sobu</mat-card-title>
+      </mat-card-header>
 
-        <mat-card-content>
-          <form [formGroup]="roomForm" (ngSubmit)="createRoom()">
+      <mat-card-content>
+        <form [formGroup]="roomForm" (ngSubmit)="createRoom()">
+          <mat-form-field appearance="outline">
+            <mat-label>Broj sobe</mat-label>
+            <input matInput formControlName="roomNumber" />
+          </mat-form-field>
+
+          <div class="two-col">
             <mat-form-field appearance="outline">
-              <mat-label>Broj sobe</mat-label>
-              <input matInput formControlName="roomNumber" />
-            </mat-form-field>
-
-            <div class="two-col">
-              <mat-form-field appearance="outline">
-                <mat-label>Sprat</mat-label>
-                <input matInput type="number" formControlName="floor" />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Kvadratura</mat-label>
-                <input matInput type="number" formControlName="sizeSqm" />
-              </mat-form-field>
-            </div>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Tip sobe</mat-label>
-              <mat-select formControlName="roomTypeId">
-                @for (type of roomTypes(); track type.roomTypeId) {
-                  <mat-option [value]="type.roomTypeId">
-                    {{ type.name }} · {{ price(type.basePrice) | currency: 'RSD' }}
-                  </mat-option>
-                }
-              </mat-select>
+              <mat-label>Sprat</mat-label>
+              <input matInput type="number" formControlName="floor" />
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>URL slike</mat-label>
-              <input matInput formControlName="imageUrl" />
+              <mat-label>Kvadratura</mat-label>
+              <input matInput type="number" formControlName="sizeSqm" />
             </mat-form-field>
+          </div>
 
-            <button mat-flat-button type="submit">
-              <mat-icon>add</mat-icon>
-              Dodaj sobu
-            </button>
-          </form>
-        </mat-card-content>
-      </mat-card>
+          <mat-form-field appearance="outline">
+            <mat-label>Tip sobe</mat-label>
+            <mat-select formControlName="roomTypeId">
+              @for (type of roomTypes(); track type.roomTypeId) {
+              <mat-option [value]="type.roomTypeId">
+                {{ type.name }} · {{ price(type.basePrice) | currency: 'RSD' }}
+              </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>URL slike</mat-label>
+            <input matInput formControlName="imageUrl" />
+          </mat-form-field>
+
+          <button mat-flat-button type="submit">
+            <mat-icon>add</mat-icon>
+            Dodaj sobu
+          </button>
+        </form>
+      </mat-card-content>
+    </mat-card>
     }
 
     <mat-card class="panel reservations-panel">
@@ -148,24 +186,18 @@
               <th mat-header-cell *matHeaderCellDef>Status</th>
               <td mat-cell *matCellDef="let reservation">
                 @if (auth.isAdmin()) {
-                  <mat-form-field appearance="outline" class="status-select">
-                    <mat-select
-                      [value]="reservation.status"
-                      (selectionChange)="updateStatus(reservation, $event)"
-                    >
-                      @for (status of statuses; track status) {
-                        <mat-option [value]="status">{{ status }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
+                <mat-form-field appearance="outline" class="status-select">
+                  <mat-select [value]="reservation.status" (selectionChange)="updateStatus(reservation, $event)">
+                    @for (status of statuses; track status) {
+                    <mat-option [value]="status">{{ status }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
                 } @else {
-                  <span
-                    class="status-badge"
-                    [class.warning]="reservation.status === 'PENDING'"
-                    [class.danger]="reservation.status === 'CANCELLED'"
-                  >
-                    {{ reservation.status }}
-                  </span>
+                <span class="status-badge" [class.warning]="reservation.status === 'PENDING'"
+                  [class.danger]="reservation.status === 'CANCELLED'">
+                  {{ reservation.status }}
+                </span>
                 }
               </td>
             </ng-container>
@@ -174,28 +206,25 @@
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let reservation">
                 @if (reservation.status !== 'CANCELLED' && reservation.status !== 'CHECKED_OUT') {
-                  <button
-                    mat-icon-button
-                    type="button"
-                    aria-label="Cancel reservation"
-                    (click)="cancelReservation(reservation)"
-                  >
-                    <mat-icon>cancel</mat-icon>
-                  </button>
+                <button mat-icon-button type="button" aria-label="Cancel reservation"
+                  (click)="cancelReservation(reservation)">
+                  <mat-icon>cancel</mat-icon>
+                </button>
                 }
               </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="auth.isAdmin() ? reservationColumns : guestReservationColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: auth.isAdmin() ? reservationColumns : guestReservationColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: auth.isAdmin() ? reservationColumns : guestReservationColumns">
+            </tr>
           </table>
         </div>
 
         @if (!reservations().length) {
-          <div class="empty-state">
-            <mat-icon>event_busy</mat-icon>
-            <h3>Nema rezervacija</h3>
-          </div>
+        <div class="empty-state">
+          <mat-icon>event_busy</mat-icon>
+          <h3>Nema rezervacija</h3>
+        </div>
         }
       </mat-card-content>
     </mat-card>

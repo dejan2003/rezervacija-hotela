@@ -91,6 +91,18 @@
           <div>
             <p>Soba {{ room.roomNumber }} · Sprat {{ room.floor }}</p>
             <h3>{{ room.roomType.name }}</h3>
+            @if (averageRating(room); as rating) {
+            <div class="room-rating">
+              <mat-icon>star</mat-icon>
+              <strong>{{ rating }}</strong>
+              <span>({{ reviewCount(room) }})</span>
+            </div>
+            } @else {
+            <div class="room-rating muted">
+              <mat-icon>star_border</mat-icon>
+              <span>Nema ocena</span>
+            </div>
+            }
           </div>
           <span>{{ room.status }}</span>
         </div>

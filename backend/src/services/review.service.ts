@@ -1,22 +1,46 @@
-import { IsNull } from "typeorm";
+import { IsNull, Not } from "typeorm";
 import { AppDataSource } from "../db";
 import { Review } from "../entities/Review";
 import { checkIfDefined } from "../utils";
 import { ReviewModel } from "../models/review.model";
+import { Reservation } from "../entities/Reservation";
+import { ReservationEnum } from "../models/reservation.model";
 
 const repo = AppDataSource.getRepository(Review);
 
 export class ReviewService {
   static async getAllReviews() {
-    return await repo.find({
+    const reviews = await repo.find({
       where: {
         deletedAt: IsNull(),
       },
       relations: {
         user: true,
-        room: true,
+        room: {
+          roomType: true,
+        },
+      },
+      order: {
+        createdAt: "DESC",
       },
     });
+
+    return reviews.map((review) => ({
+      reviewId: review.reviewId,
+      rating: review.rating,
+      comment: review.comment,
+      createdAt: review.createdAt,
+      user: {
+        userId: review.user.userId,
+        firstName: review.user.firstName,
+        lastName: review.user.lastName,
+      },
+      room: {
+        roomId: review.room.roomId,
+        roomNumber: review.room.roomNumber,
+        roomType: review.room.roomType,
+      },
+    }));
   }
 
   static async getReviewById(id: number) {
@@ -35,11 +59,53 @@ export class ReviewService {
   }
 
   static async createReview(model: ReviewModel) {
+    const rating = Number(model.rating);
+    const roomId = Number(model.roomId);
+
+    if (!roomId) {
+      throw new Error("Room is required");
+    }
+
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      throw new Error("Rating must be between 1 and 5");
+    }
+
+    const reservationRepo = AppDataSource.getRepository(Reservation);
+
+    const reservation = await reservationRepo.findOne({
+      where: {
+        userId: model.userId,
+        roomId,
+        deletedAt: IsNull(),
+        status: Not(ReservationEnum.CANCELLED),
+      },
+    });
+
+    if (!reservation) {
+      throw new Error("You can review only rooms you reserved");
+    }
+
+    const existingReview = await repo.findOne({
+      where: {
+        userId: model.userId,
+        roomId,
+      },
+    });
+
+    if (existingReview) {
+      existingReview.rating = rating;
+      existingReview.comment = model.comment?.trim() || null;
+      existingReview.deletedAt = null;
+      existingReview.updatedAt = new Date();
+
+      return await repo.save(existingReview);
+    }
+
     return await repo.save({
       userId: model.userId,
-      roomId: model.roomId,
-      rating: model.rating,
-      comment: model.comment,
+      roomId,
+      rating,
+      comment: model.comment?.trim() || null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
