@@ -41,6 +41,6 @@ AppDataSource.initialize()
     });
   })
   .catch((err) => {
-    console.error("❌ TYPEORM INIT ERROR:");
+    console.error("TYPEORM INIT ERROR:");
     console.error(err);
   });

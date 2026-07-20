@@ -2,8 +2,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 
 import { DashboardStats, Reservation, ReservationStatus, Room, RoomType, Review } from './models';
+import { environment } from '../../environment/environment';
 
-const API_URL = 'http://localhost:4000/api';
+const API_URL = environment.apiUrl;
 
 @Injectable({
   providedIn: 'root',

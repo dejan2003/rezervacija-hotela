@@ -4,8 +4,9 @@ import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 
 import { User } from './models';
+import { environment } from '../../environment/environment';
 
-const API_URL = 'http://localhost:4000/api';
+const API_URL = environment.apiUrl;
 
 interface AuthResponse {
   message: string;
